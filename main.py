@@ -16,7 +16,7 @@ class MyModel(Base):
     roll_id = Column(Integer, primary_key=True)
     name = Column(String)
     phone = Column(String)
-    major = Column(Integer)
+    major = Column(String)
 class MyComponent(ApplicationSession):
 
     @inlineCallbacks
@@ -33,23 +33,19 @@ class MyComponent(ApplicationSession):
             session.add(record)
             session.commit()
             result = {'status': 'success', 'data': {'roll_id': roll_id, 'name': name, 'phone': phone, 'major': major}}
-            return (result)
+            return result
 
         yield self.register(save_record, 'com.test.create')
 
         def get_data(roll_id):
             data = session.query(MyModel).filter_by(roll_id=roll_id).first()
             if data:
-                result = {'status': 'success',
-                         'data': {'name': data.name, 'phone': data.phone, 'major': data.major}}
+                result = {'status': 'success', 'data': {'name': data.name, 'phone': data.phone, 'major': data.major}}
             else:
                 result = {'status': 'error', 'message': f"No student with roll ID {roll_id} found."}
-            return (result)
+            return result
 
         yield self.register(get_data, 'com.test.get')
-
-
-
 
 if __name__ == '__main__':
     url = environ.get("wick", "ws://localhost:8080/ws")
