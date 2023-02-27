@@ -1,18 +1,21 @@
+
 from os import environ
-from models import MyModel
+from autobahn import wamp
+from models import EmployeeData
 from database import session
-from autobahn.twisted.wamp import ApplicationSession, ApplicationRunner
-from twisted.internet.defer import inlineCallbacks
+from autobahn.asyncio.wamp import ApplicationSession, ApplicationRunner
+
 
 
 class MyComponent(ApplicationSession):
 
-    @inlineCallbacks
-    def onJoin(self, details):
+
+    async def onJoin(self, details):
         print("Procedure registered")
 
-        def save_record(roll_id, name, phone, major):
-            record = MyModel(roll_id=roll_id, name=name, phone=phone, major=major)
+        @wamp.register('com.test.create',check_types=True)
+        async def save_record(roll_id, name, phone, major):
+            record = EmployeeData(roll_id=roll_id, name=name, phone=phone, major=major)
             session.add(record)
             session.commit()
             session.close()
@@ -20,10 +23,10 @@ class MyComponent(ApplicationSession):
             result = {'status': 'success', 'data': {'roll_id': roll_id, 'name': name, 'phone': phone, 'major': major}}
             return result
 
-        yield self.register(save_record, 'com.test.create')
 
-        def get_data(roll_id):
-            data = session.query(MyModel).filter_by(roll_id=roll_id).first()
+        @wamp.register('com.test.get', check_types=True)
+        async def get_data(roll_id):
+            data = session.query(EmployeeData).filter_by(roll_id=roll_id).first()
             session.close()
             if data:
                 result = {'status': 'success', 'data': {'name': data.name, 'phone': data.phone, 'major': data.major}}
@@ -31,7 +34,6 @@ class MyComponent(ApplicationSession):
                 result = {'msg': f" There is no student with roll ID {roll_id} ."}
             return result
 
-        yield self.register(get_data, 'com.test.get')
 
 
 if __name__ == '__main__':
