@@ -3,7 +3,6 @@ from database import Base
 
 
 class MyModel(Base):
-
     __tablename__ = 'data'
     roll_id = Column(Integer, primary_key=True)
     name = Column(String)

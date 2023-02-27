@@ -5,7 +5,6 @@ from autobahn.twisted.wamp import ApplicationSession, ApplicationRunner
 from twisted.internet.defer import inlineCallbacks
 
 
-
 class MyComponent(ApplicationSession):
 
     @inlineCallbacks
@@ -33,6 +32,7 @@ class MyComponent(ApplicationSession):
             return result
 
         yield self.register(get_data, 'com.test.get')
+
 
 if __name__ == '__main__':
     url = environ.get("wick", "ws://localhost:8080/ws")
