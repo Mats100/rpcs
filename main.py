@@ -1,6 +1,6 @@
 from os import environ
-from api import Register
 from autobahn.asyncio.wamp import ApplicationSession, ApplicationRunner
+from api import Register
 
 
 class MyComponent(ApplicationSession):
