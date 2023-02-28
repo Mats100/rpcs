@@ -11,7 +11,7 @@ class MyComponent(ApplicationSession):
         regs = await self.register(registry)
         for reg in regs:
             print("registered", reg.procedure)
-        print('Registered methods; ready for frontend.')
+        print('Registered methods;')
 
 
 if __name__ == '__main__':
