@@ -16,7 +16,7 @@ class Register:
         return result
 
     @wamp.register('com.test.get', check_types=True)
-    async def get_data(roll_id: int):
+    async def get_data(self, roll_id: int):
         data = session.query(EmployeeData).filter_by(roll_id=roll_id).first()
         session.close()
         if data:
