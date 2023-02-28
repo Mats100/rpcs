@@ -6,7 +6,7 @@ from models import EmployeeData
 class Register:
 
     @wamp.register('com.test.create', check_types=True)
-    async def save_record(self, roll_id: int, name: str, phone: str, major: str):
+    async def save_record(self, roll_id: int, name: str, phone: int, major: str):
         record = EmployeeData(roll_id=roll_id, name=name, phone=phone, major=major)
         with sessionLocal() as session:
             session.add(record)
