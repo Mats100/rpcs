@@ -9,10 +9,12 @@ class Register:
     async def save_record(self, roll_id: int, name: str, phone: int, major: str):
         record = EmployeeData(roll_id=roll_id, name=name, phone=phone, major=major)
         with sessionLocal() as session:
+            session.query(EmployeeData).filter_by(roll_id=roll_id).first()
             session.add(record)
             session.commit()
             session.close()
-            result = {'status': 'success', 'data': {'roll_id': roll_id, 'name': name, 'phone': phone, 'major': major}}
+            result = {'status': 'success',
+                      'data': {'roll_id': roll_id, 'name': name, 'phone': phone, 'major': major}}
             return result
 
     @wamp.register('com.test.get', check_types=True)
