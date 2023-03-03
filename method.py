@@ -1,8 +1,10 @@
 from autobahn import wamp
 from autobahn.wamp import ApplicationError
+import models
 from database import sessionLocal
 from models import EmployeeData
-
+from schema import BaseModel, test_schema
+from sqlalchemy import update
 
 class Register:
     def validate_name(self, name: str):
@@ -13,7 +15,7 @@ class Register:
             return False
         return True
 
-    @wamp.register('com.test.create', check_types=True)
+    @wamp.register('com.test.create', check_types=False)
     async def save_record(self, roll_id: int, name: str, phone: str | int, major: str):
         if not self.validate_name(name):
             raise ApplicationError("validation error", f"name '{name}' is in invalid format")
@@ -21,6 +23,7 @@ class Register:
             raise ApplicationError("validation error", f"phone '{phone}' is in invalid format")
         record = EmployeeData(roll_id=roll_id, name=name, phone=phone, major=major)
         with sessionLocal() as session:
+            data = session.query(EmployeeData).filter_by(roll_id=roll_id).first()
             session.add(record)
             session.commit()
             session.close()
@@ -37,3 +40,7 @@ class Register:
         else:
             result = {'msg': f" There is no student with roll ID {roll_id} ."}
         return result
+
+    @wamp.register('com.test.update', check_types=True)
+    async def update_user(self, roll_id: int, data: dict = None, name: str = None, phone: str | int = None,major: str = None):
+
