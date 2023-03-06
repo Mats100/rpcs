@@ -1,7 +1,5 @@
 from pydantic import BaseModel, Extra
-
-
-class test_schema(BaseModel):
+class Schema(BaseModel):
     roll_id: int
     name: str
     phone: str
