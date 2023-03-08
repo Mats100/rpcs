@@ -27,7 +27,7 @@ class Register:
             data = session.execute(query)
             result = data.scalar()
             if result is not None:
-                raise ApplicationError("validation error", f" User with this Id '{roll_id}' already exists.")
+                raise ApplicationError("validation error", f" Student with this Id '{roll_id}' already exists.")
 
             record = EmployeeData(roll_id=roll_id, name=name, phone=phone, major=major)
             session.add(record)
@@ -50,12 +50,18 @@ class Register:
             return result
 
     @wamp.register('com.test.update', check_types=True)
-    async def update_user(self, roll_id: int, data: dict = None):
-        tests = Schema(data)
+    async def update_user(self, roll_id: int,  data: dict = None):
+        tests = Schema(**data)
         user = tests.dict()
+        if not self.validate_name(user.get('name')):
+            raise ApplicationError("validation error", f"Name 'name':{name}' is in invalid format")
+        if not self.validate_number(user.get('phone')):
+            raise ApplicationError("validation error", f"Phone '{phone}' is in invalid format")
         with sessionLocal() as session:
             query = select(EmployeeData).where(EmployeeData.roll_id == roll_id)
-            data = session.execute(query)
-            result = data.scalar()
-            data_update = update(EmployeeData).values(**user).where(EmployeeData.roll_id == roll_id)
+            data_query = session.execute(query)
+            result = data_query.scalar()
+            if result is not None:
+                raise ApplicationError("validation error", f" Student with this Id '{roll_id}' does not exists.")
 
+            update_query = update(EmployeeData).values(**user).where(EmployeeData.roll_id == roll_id)
