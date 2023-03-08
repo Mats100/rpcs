@@ -19,11 +19,17 @@ class Register:
     @wamp.register('com.test.create', check_types=False)
     async def save_record(self, roll_id: int, name: str, phone: str | int, major: str):
         if not self.validate_name(name):
-            raise ApplicationError("validation error", f"name '{name}' is in invalid format")
+            raise ApplicationError("validation error", f"Name '{name}' is in invalid format")
         if not self.validate_number(phone):
-            raise ApplicationError("validation error", f"phone '{phone}' is in invalid format")
-        record = EmployeeData(roll_id=roll_id, name=name, phone=phone, major=major)
+            raise ApplicationError("validation error", f"Phone '{phone}' is in invalid format")
         with sessionLocal() as session:
+            query = select(EmployeeData).where(EmployeeData.roll_id == roll_id)
+            data = session.execute(query)
+            result = data.scalar()
+            if result is not None:
+                raise ApplicationError("validation error", f" User with this Id '{roll_id}' already exists.")
+
+            record = EmployeeData(roll_id=roll_id, name=name, phone=phone, major=major)
             session.add(record)
             session.commit()
             session.close()
@@ -35,12 +41,13 @@ class Register:
         with sessionLocal() as session:
             query = select(EmployeeData).where(EmployeeData.roll_id == roll_id)
             data = session.execute(query)
-            result = data.scalars().first()
-        if result is None:
-            result = {'msg': f" There is no student with roll ID {roll_id} ."}
-        else:
-            result = {'status': 'success', 'data': {'name': result.name, 'phone': result.phone, 'major': result.major}}
-        return result
+            result = data.scalar()
+            if result is None:
+                result = {'msg': f" There is no student with roll ID {roll_id} ."}
+            else:
+                result = {'status': 'success',
+                          'data': {'name': result.name, 'phone': result.phone, 'major': result.major}}
+            return result
 
     @wamp.register('com.test.update', check_types=True)
     async def update_user(self, roll_id: int, data: dict = None):
