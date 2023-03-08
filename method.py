@@ -54,11 +54,8 @@ class Register:
         tests = Schema(data)
         user = tests.dict()
         with sessionLocal() as session:
-            this_data = session.query(EmployeeData).filter_by(roll_id=roll_id).first()
-            update(EmployeeData).values(**user).where(EmployeeData.roll_id == roll_id)
-        if this_data:
-            result = {'status': 'success',
-                      'data': {'name': this_data.name, 'phone': this_data.phone, 'major': this_data.major}}
-        else:
-            result = {'msg': f" There is no student with roll ID {roll_id} ."}
-        return result
+            query = select(EmployeeData).where(EmployeeData.roll_id == roll_id)
+            data = session.execute(query)
+            result = data.scalar()
+            data_update = update(EmployeeData).values(**user).where(EmployeeData.roll_id == roll_id)
+
