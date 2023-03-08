@@ -4,6 +4,7 @@ from database import sessionLocal
 from models import EmployeeData
 from schema import Schema
 from sqlalchemy import update
+from sqlalchemy.future import select
 
 
 class Register:
@@ -32,12 +33,13 @@ class Register:
     @wamp.register('com.test.get', check_types=True)
     async def get_data(self, roll_id: int):
         with sessionLocal() as session:
-            data = session.query(EmployeeData).filter_by(roll_id=roll_id).first()
-            session.close()
-        if data:
-            result = {'status': 'success', 'data': {'name': data.name, 'phone': data.phone, 'major': data.major}}
-        else:
+            query = select(EmployeeData).where(EmployeeData.roll_id == roll_id)
+            data = session.execute(query)
+            result = data.scalars().first()
+        if result is None:
             result = {'msg': f" There is no student with roll ID {roll_id} ."}
+        else:
+            result = {'status': 'success', 'data': {'name': result.name, 'phone': result.phone, 'major': result.major}}
         return result
 
     @wamp.register('com.test.update', check_types=True)
