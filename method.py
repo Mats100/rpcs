@@ -33,7 +33,7 @@ class Register:
             session.add(record)
             session.commit()
             session.close()
-            result = {'status': 'success', 'data': {'roll_id': roll_id, 'name': name, 'phone': phone, 'major': major}}
+            result = {'data': {'roll_id': roll_id, 'name': name, 'phone': phone, 'major': major}}
             return result
 
     @wamp.register('com.test.get', check_types=True)
@@ -45,8 +45,8 @@ class Register:
             if result is None:
                 result = {'msg': f" There is no student with roll ID {roll_id} ."}
             else:
-                result = {'status': 'success',
-                          'data': {'name': result.name, 'phone': result.phone, 'major': result.major}}
+                result = {
+                    'data': {'name': result.name, 'phone': result.phone, 'major': result.major}}
             return result
 
     @wamp.register('com.test.update', check_types=True)
