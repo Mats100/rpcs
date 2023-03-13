@@ -50,18 +50,22 @@ class Register:
             return result
 
     @wamp.register('com.test.update', check_types=True)
-    async def update_user(self, roll_id: int,  data: dict = None):
-        tests = Schema(**data)
+    async def update_user(self, roll_id: int, data: dict = None):
+        tests = Schema(**data, roll_id=roll_id)
         user = tests.dict()
-        if not self.validate_name(user.get('name')):
-            raise ApplicationError("validation error", f"Name 'name':{name}' is in invalid format")
-        if not self.validate_number(user.get('phone')):
-            raise ApplicationError("validation error", f"Phone '{phone}' is in invalid format")
+        name = user.get("name")
+        phone = user.get("phone")
+        major = user.get("major")
+        if not self.validate_name(name):
+            raise ApplicationError("validation error", f"Name 'name':{user.get('name')}' is in invalid format")
+        if not self.validate_number(phone):
+            raise ApplicationError("validation error", f"Phone '{user.get('phone')}' is in invalid format")
         with sessionLocal() as session:
             query = select(EmployeeData).where(EmployeeData.roll_id == roll_id)
             data_query = session.execute(query)
             result = data_query.scalar()
-            if result is not None:
+            if result is None:
                 raise ApplicationError("validation error", f" Student with this Id '{roll_id}' does not exists.")
-
             update_query = update(EmployeeData).values(**user).where(EmployeeData.roll_id == roll_id)
+
+
