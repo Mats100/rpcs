@@ -17,7 +17,7 @@ class Register:
         return True
 
     @wamp.register('com.test.create', check_types=False)
-    async def save_record(self, roll_id: int, name: str, phone: str | int, major: str):
+    async def save_record(self, roll_id: int, name: str, phone: str, major: str):
         if not self.validate_name(name):
             raise ApplicationError("validation error", f"Name '{name}' is in invalid format")
         if not self.validate_number(phone):
@@ -67,5 +67,5 @@ class Register:
             if result is None:
                 raise ApplicationError("validation error", f" Student with this Id '{roll_id}' does not exists.")
             update_query = update(EmployeeData).values(**user).where(EmployeeData.roll_id == roll_id)
-
-
+            session.execute(update_query)
+            return Schema.from_orm(result).dict()
