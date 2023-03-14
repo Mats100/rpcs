@@ -65,7 +65,7 @@ class Register:
             data_query = session.execute(query)
             result = data_query.scalar()
             if result is None:
-                raise ApplicationError("validation error", f" Student with this Id '{roll_id}' does not exists.")
+                raise ApplicationError("validation error", f" Student with this roll ID '{roll_id}' does not exists.")
             update_query = update(EmployeeData).values(**user).where(EmployeeData.roll_id == roll_id)
             session.execute(update_query)
             session.commit()
