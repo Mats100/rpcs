@@ -52,13 +52,13 @@ class Register:
     @wamp.register('com.test.update', check_types=True)
     async def update_user(self, roll_id: int, data: dict = None):
         tests = Schema(**data, roll_id=roll_id)
-        user = tests.dict()
+        user = tests.dict(exclude_none=True)
         name = user.get("name")
         phone = user.get("phone")
         major = user.get("major")
-        if not self.validate_name(name):
-            raise ApplicationError("validation error", f"Name 'name':{user.get('name')}' is in invalid format")
-        if not self.validate_number(phone):
+        if name is not None and not self.validate_name(name):
+            raise ApplicationError("validation error", f"Name '{user.get('name')}' is in invalid format")
+        if phone is not None and not self.validate_number(phone):
             raise ApplicationError("validation error", f"Phone '{user.get('phone')}' is in invalid format")
         with sessionLocal() as session:
             query = select(EmployeeData).where(EmployeeData.roll_id == roll_id)
