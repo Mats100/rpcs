@@ -68,4 +68,5 @@ class Register:
                 raise ApplicationError("validation error", f" Student with this Id '{roll_id}' does not exists.")
             update_query = update(EmployeeData).values(**user).where(EmployeeData.roll_id == roll_id)
             session.execute(update_query)
+            session.commit()
             return Schema.from_orm(result).dict()
