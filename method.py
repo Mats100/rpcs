@@ -27,7 +27,7 @@ class Register:
             data = session.execute(query)
             result = data.scalar()
             if result is not None:
-                raise ApplicationError("validation error", f" Student with this Id '{roll_id}' already exists.")
+                raise ApplicationError("validation error", f" Student with this Id {roll_id} already exists.")
 
             record = EmployeeData(roll_id=roll_id, name=name, phone=phone, major=major)
             session.add(record)
@@ -65,8 +65,20 @@ class Register:
             data_query = session.execute(query)
             result = data_query.scalar()
             if result is None:
-                raise ApplicationError("validation error", f" Student with this roll ID '{roll_id}' does not exists.")
+                raise ApplicationError("validation error", f" Student with this roll ID {roll_id} does not exists.")
             update_query = update(EmployeeData).values(**user).where(EmployeeData.roll_id == roll_id)
             session.execute(update_query)
             session.commit()
             return Schema.from_orm(result).dict()
+
+    @wamp.register('com.test.delete', check_types=True)
+    async def delete_user(self, roll_id: int):
+        delete_query = select(EmployeeData).where(EmployeeData.roll_id == roll_id)
+        with sessionLocal() as session:
+            result = session.execute(delete_query)
+            user = result.scalar()
+            if user is None:
+                raise ApplicationError("validation error", f'Student with this roll ID {roll_id} does not exists.')
+            session.delete(user)
+            session.commit()
+            return f'User with roll ID  {roll_id} deleted'
