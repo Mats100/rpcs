@@ -80,4 +80,3 @@ class Register:
                 raise ApplicationError("validation error", f'Student with this roll ID {roll_id} does not exists.')
             session.delete(user)
             session.commit()
-            return f'User with roll ID  {roll_id} deleted'
