@@ -5,6 +5,7 @@ from models import EmployeeData
 from schema import Schema
 from sqlalchemy import update
 from sqlalchemy.future import select
+from pydantic import ValidationError
 
 
 class Register:
@@ -33,7 +34,7 @@ class Register:
             session.add(record)
             session.commit()
             session.close()
-            result =  {'roll_id': roll_id, 'name': name, 'phone': phone, 'major': major}
+            result = {'roll_id': roll_id, 'name': name, 'phone': phone, 'major': major}
             return result
 
     @wamp.register('com.test.get', check_types=True)
@@ -50,7 +51,11 @@ class Register:
 
     @wamp.register('com.test.update', check_types=True)
     async def update_user(self, roll_id: int, data: dict = None):
-        tests = Schema(**data, roll_id=roll_id)
+
+        try:
+            tests = Schema(**data, roll_id=roll_id)
+        except ValidationError as ex:
+            raise ApplicationError("validation error", f"{ex.json()}")
         user = tests.dict(exclude_none=True)
         name = user.get("name")
         phone = user.get("phone")
@@ -63,12 +68,12 @@ class Register:
             query = select(EmployeeData).where(EmployeeData.roll_id == roll_id)
             data_query = session.execute(query)
             result = data_query.scalar()
-            if result is None:
-                raise ApplicationError("validation error", f" Student with this roll ID {roll_id} does not exists.")
-            update_query = update(EmployeeData).values(**user).where(EmployeeData.roll_id == roll_id)
-            session.execute(update_query)
-            session.commit()
-            return Schema.from_orm(result).dict()
+        if result is None:
+            raise ApplicationError("validation error", f" Student with this roll ID {roll_id} does not exists.")
+        update_query = update(EmployeeData).values(**user).where(EmployeeData.roll_id == roll_id)
+        session.execute(update_query)
+        session.commit()
+        return Schema.from_orm(result).dict()
 
     @wamp.register('com.test.delete', check_types=True)
     async def delete_user(self, roll_id: int):
