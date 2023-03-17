@@ -45,8 +45,7 @@ class Register:
             if result is None:
                 result = {'msg': f" There is no student with roll ID {roll_id} ."}
             else:
-                result = {
-                    {'name': result.name, 'phone': result.phone, 'major': result.major}}
+                result = {'name': result.name, 'phone': result.phone, 'major': result.major}
             return result
 
     @wamp.register('com.test.update', check_types=True)
