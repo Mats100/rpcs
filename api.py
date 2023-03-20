@@ -52,7 +52,6 @@ class Register:
 
     @wamp.register('com.test.update', check_types=True)
     async def update_user(self, roll_id: int, data: dict = None):
-
         try:
             tests = Schema(**data, roll_id=roll_id)
         except ValidationError as ex:
@@ -67,11 +66,12 @@ class Register:
             raise ApplicationError("validation error", f"Phone '{user.get('phone')}' is in invalid format")
         with sessionLocal() as session:
             result = self.query(roll_id, session)
-        if result is None:
-            raise ApplicationError("validation error", f" Student with this roll ID {roll_id} does not exists.")
-        update_query = update(EmployeeData).values(**user).where(EmployeeData.roll_id == roll_id)
-        session.execute(update_query)
-        session.commit()
+            if result is None:
+                raise ApplicationError("validation error", f" Student with this roll ID {roll_id} does not exists.")
+            update_query = update(EmployeeData).values(**user).where(EmployeeData.roll_id == roll_id)
+            session.execute(update_query)
+            session.commit()
+            session.refresh(result)
         return Schema.from_orm(result).dict()
 
     @wamp.register('com.test.delete', check_types=True)
