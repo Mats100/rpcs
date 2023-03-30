@@ -17,7 +17,7 @@ class Register:
             return False
         return True
 
-    def query(self, roll_id: int, session):
+    def get_user(self, roll_id: int, session):
         query = select(EmployeeData).where(EmployeeData.roll_id == roll_id)
         data = session.execute(query)
         return data.scalar()
@@ -29,7 +29,7 @@ class Register:
         if not self.validate_number(phone):
             raise ApplicationError("validation error", f"Phone '{phone}' is in invalid format")
         with sessionLocal() as session:
-            result = self.query(roll_id, session)
+            result = self.get_user(roll_id, session)
             if result is not None:
                 raise ApplicationError("validation error", f" Student with this Id {roll_id} already exists.")
 
@@ -43,7 +43,7 @@ class Register:
     @wamp.register('com.test.get', check_types=True)
     async def get_data(self, roll_id: int):
         with sessionLocal() as session:
-            result = self.query(roll_id, session)
+            result = self.get_user(roll_id, session)
             if result is None:
                 result = {'msg': f" There is no student with roll ID {roll_id} ."}
             else:
@@ -65,7 +65,7 @@ class Register:
         if phone is not None and not self.validate_number(phone):
             raise ApplicationError("validation error", f"Phone '{user.get('phone')}' is in invalid format")
         with sessionLocal() as session:
-            result = self.query(roll_id, session)
+            result = self.get_user(roll_id, session)
             if result is None:
                 raise ApplicationError("validation error", f" Student with this roll ID {roll_id} does not exists.")
             update_query = update(EmployeeData).values(**user).where(EmployeeData.roll_id == roll_id)
